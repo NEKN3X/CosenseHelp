@@ -5,10 +5,12 @@
     "jsx": "react-jsx",
     "baseUrl": "src",
     "paths": {
-      "@/components/*": ["/components/*"],
-      "@/hooks/*": ["/hooks/*"],
-      "@/utils/*": ["/utils/*"],
-      "@/assets/*": ["/assets/*"]
+      "@/components/*": ["./components/*"],
+      "@/hooks/*": ["./hooks/*"],
+      "@/utils/*": ["./utils/*"],
+      "@/lib/*": ["./utils/lib/*"],
+      "@/assets/*": ["./assets/*"],
+      "@/styles/*": ["./styles/*"]
     }
   }
 }
