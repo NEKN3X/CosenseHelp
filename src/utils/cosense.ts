@@ -2,12 +2,12 @@ import { WebHelp } from './storage/webHelp';
 
 export function matchCosenseUrl(url: string) {
   const result = url.match(/https?:\/\/scrapbox\.io\/([^/]+)\/([^/]*)/);
-  if (!result) return undefined;
+  if (!result) return [undefined, undefined];
   return [result[1], result[2]];
 }
 
-export function extractHelp(page: string, lines: string[]): WebHelp[] {
-  const helpRegex = /^% (echo|open)\s+(.*)/;
+export function extractHelp(url: string, lines: string[]): WebHelp[] {
+  const helpRegex = /^% (echo|open)\s+(http(s)?:\/\/[^\s]+)\s*$/;
   return lines
     .map((x, i) => ({
       text: x,
@@ -15,11 +15,9 @@ export function extractHelp(page: string, lines: string[]): WebHelp[] {
     }))
     .filter((x) => /^\?\s/.test(x.text))
     .map((x) => {
-      const url =
-        x.next && helpRegex.test(x.next) ? x.next.match(helpRegex)![2] : page;
-
       return {
-        url,
+        url:
+          x.next && helpRegex.test(x.next) ? x.next.match(helpRegex)![2] : url,
         helpfeel: x.text.replace(/^\?\s+/, ''),
       };
     });

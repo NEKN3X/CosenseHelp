@@ -10,6 +10,12 @@ export default defineConfig({
     name: import.meta.env.APP_NAME,
     options_page: 'options.html',
     permissions: ['storage'],
+    web_accessible_resources: [
+      {
+        resources: ['main-world.js'],
+        matches: ['https://scrapbox.io/*'],
+      },
+    ],
   },
   vite: () => ({
     plugins: [tailwindcss()],
