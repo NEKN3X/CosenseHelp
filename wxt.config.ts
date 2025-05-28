@@ -9,7 +9,7 @@ export default defineConfig({
   manifest: {
     name: import.meta.env.APP_NAME,
     options_page: 'options.html',
-    permissions: [],
+    permissions: ['storage'],
   },
   vite: () => ({
     plugins: [tailwindcss()],
