@@ -29,9 +29,30 @@ export function extractHelp(url: string, lines: string[]): WebHelp[] {
     });
 }
 
-export function expandHelpfeel(helpfeel: string) {
-  const result = parse(literal)(helpfeel);
+export function expandHelpfeel(
+  helpfeel: string,
+  glossary?: Map<string, string>,
+) {
+  let updatedHelpfeel = helpfeel;
+  for (const [key, value] of glossary || []) {
+    updatedHelpfeel = updatedHelpfeel.replace(
+      new RegExp(`{${key}}`, 'g'),
+      value,
+    );
+  }
+  const result = parse(literal)(updatedHelpfeel);
   if (result.length === 0) throw new Error('Invalid input');
   if (result[0][1] !== '') throw new Error(`Unused input: ${result[0][1]}`);
   return result[0][0];
+}
+
+export function extractGlossary(lines: string[]): Map<string, string> {
+  const glossaryRegex = /^(.+):\s+`(.+)`$/;
+  const glossary = new Map(
+    lines
+      .map((line) => line.match(glossaryRegex))
+      .filter((match) => match !== null)
+      .map((match) => [match[1], match[2]]),
+  );
+  return glossary;
 }

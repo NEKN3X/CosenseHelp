@@ -11,8 +11,6 @@ import {
 import {
   activeTabHelpAtom,
   activeUrlAtom,
-  allCosenseSuggestsAtom,
-  allWebSuggestsAtom,
   commandInputAtom,
   CommandPage,
   commandPageAtom,
@@ -20,6 +18,7 @@ import {
   cosenseStorageAtom,
   expandedCommandAtom,
   filteredSuggestsAtom,
+  glossaryAtom,
   webStorageAtom,
 } from '@/hooks/atom';
 import { makeCosenseUrl } from '@/utils/cosense';
@@ -31,6 +30,7 @@ import {
   openUrlInNewWindow,
 } from '@/utils/open';
 import { watchCosenseHelp } from '@/utils/storage/cosenseHelp';
+import { getGlossary } from '@/utils/storage/glossary';
 import { getOption } from '@/utils/storage/option';
 import {
   removeWebHelp,
@@ -38,7 +38,7 @@ import {
   updateWebHelp,
   watchWebHelp,
 } from '@/utils/storage/webHelp';
-import { useAtom, useAtomValue } from 'jotai';
+import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import {
   ChevronLeft,
   ChevronRight,
@@ -56,18 +56,17 @@ import { isHotkeyPressed } from 'react-hotkeys-hook';
 
 function App() {
   const [commandInput, setCommandInput] = useAtom(commandInputAtom);
-  const [webHelpStorage, setWebHelpStorage] = useAtom(webStorageAtom);
-  const [cosenseStorage, setCosenseStorage] = useAtom(cosenseStorageAtom);
-  const [webSuggests, setWebSuggests] = useAtom(allWebSuggestsAtom);
-  const [cosenseSuggests, setCosenseSuggests] = useAtom(allCosenseSuggestsAtom);
+  const setWebHelpStorage = useSetAtom(webStorageAtom);
+  const setCosenseStorage = useSetAtom(cosenseStorageAtom);
   const suggests = useAtomValue(filteredSuggestsAtom);
-  const [commandPages, setCommandPages] = useAtom(commandPagesAtom);
+  const setCommandPages = useSetAtom(commandPagesAtom);
   const commandPage = useAtomValue(commandPageAtom);
   const expandedCommand = useAtomValue(expandedCommandAtom);
   const [activeUrl, setActiveUrl] = useAtom(activeUrlAtom);
   const [newPageProject, setNewPageProject] = useState('');
   const activeTabHelp = useAtomValue(activeTabHelpAtom);
   const [edittingCommand, setEditingCommand] = useState<string>('');
+  const setGlossary = useSetAtom(glossaryAtom);
 
   function goBackComamndPage() {
     setCommandPages((prev) => prev.slice(0, -1));
@@ -93,6 +92,7 @@ function App() {
     getOption().then((option) => {
       setNewPageProject(option.newPageProject);
     });
+    getGlossary().then(setGlossary);
   }, []);
 
   useEffect(() => {
@@ -128,7 +128,9 @@ function App() {
         <CommandInput
           value={commandInput}
           onValueChange={setCommandInput}
-          placeholder="Type a command or search..."
+          placeholder={
+            commandPage === 'TOP' ? 'ページを検索する' : 'Helpfeel記法'
+          }
           icon={
             commandPage !== 'TOP' && (
               <>

@@ -17,13 +17,15 @@ export const cosenseStorageAtom = atom<CosenseHelpStorageItem>();
 
 export const allWebSuggestsAtom = atom<Suggest[]>((get) => {
   const webStorage = get(webStorageAtom);
+  const glossary = get(glossaryAtom);
   if (!webStorage) return [];
-  return makeWebSuggest(webStorage);
+  return makeWebSuggest(webStorage, glossary);
 });
 export const allCosenseSuggestsAtom = atom<Suggest[]>((get) => {
   const cosenseStorage = get(cosenseStorageAtom);
+  const glossary = get(glossaryAtom);
   if (!cosenseStorage) return [];
-  return makeCosenseSuggest(cosenseStorage);
+  return makeCosenseSuggest(cosenseStorage, glossary);
 });
 
 export const allSuggestsAtom = atom<Suggest[]>((get) => [
@@ -49,8 +51,9 @@ export const expandedCommandAtom = atom<string[]>((get) => {
   const commandPage = get(commandPageAtom);
   if (commandPage !== 'ADD_HELP' && commandPage !== 'EDIT_HELP') return [];
   const commandInput = get(commandInputAtom);
+  const glossary = get(glossaryAtom);
   try {
-    return expandHelpfeel(commandInput);
+    return expandHelpfeel(commandInput, glossary);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (e) {
     return [];
@@ -65,3 +68,5 @@ export const activeTabHelpAtom = atom<string[]>((get) => {
     .filter((item) => item.url === activeUrl)
     .map((item) => item.helpfeel);
 });
+
+export const glossaryAtom = atom<Map<string, string>>();

@@ -18,9 +18,12 @@ export function makeSuggest(
   return { type, title, url };
 }
 
-export function makeWebSuggest(storage: WebHelpStorageItem): Suggest[] {
+export function makeWebSuggest(
+  storage: WebHelpStorageItem,
+  glossary?: Map<string, string>,
+): Suggest[] {
   return storage.flatMap((item) => [
-    ...expandHelpfeel(item.helpfeel).map(
+    ...expandHelpfeel(item.helpfeel, glossary).map(
       (command): Suggest => ({
         type: 'WEB',
         title: command,
@@ -30,7 +33,10 @@ export function makeWebSuggest(storage: WebHelpStorageItem): Suggest[] {
   ]);
 }
 
-export function makeCosenseSuggest(storage: CosenseHelpStorageItem): Suggest[] {
+export function makeCosenseSuggest(
+  storage: CosenseHelpStorageItem,
+  glossary?: Map<string, string>,
+): Suggest[] {
   return storage.flatMap((item) => [
     ...item.pages.flatMap((page): Suggest[] => [
       {
@@ -39,7 +45,7 @@ export function makeCosenseSuggest(storage: CosenseHelpStorageItem): Suggest[] {
         title: page.page,
       },
       ...page.help.flatMap((help): Suggest[] => [
-        ...expandHelpfeel(help.helpfeel).map(
+        ...expandHelpfeel(help.helpfeel, glossary).map(
           (command): Suggest => ({
             type: 'COSENSE_HELP',
             url: help.url,

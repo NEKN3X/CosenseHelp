@@ -1,10 +1,11 @@
 import { defineContentScript, injectScript } from '#imports';
-import { extractHelp, matchCosenseUrl } from '@/utils/cosense';
+import { extractGlossary, extractHelp, matchCosenseUrl } from '@/utils/cosense';
 import {
   isCosenseLinesChangedMessage,
   isCosensePageLoadedMessage,
 } from '@/utils/message';
 import { setCosenseHelp, setCosensePages } from '@/utils/storage/cosenseHelp';
+import { setGlossary } from '@/utils/storage/glossary';
 import { getOption } from '@/utils/storage/option';
 
 export default defineContentScript({
@@ -34,6 +35,18 @@ export default defineContentScript({
           );
           console.log('Extracted helps:', helps);
           setCosenseHelp(project, page, helps);
+
+          // update glossary
+          const option = await getOption();
+          if (
+            cosense.Page.title === 'Glossary' &&
+            cosense.Project.name === option.newPageProject
+          ) {
+            const glossary = extractGlossary(
+              lines?.map((line) => line.text) || [],
+            );
+            setGlossary(glossary);
+          }
         }
 
         if (isCosenseLinesChangedMessage(event.data)) {
@@ -46,6 +59,18 @@ export default defineContentScript({
           );
           if (!cosense.Page.title) return;
           setCosenseHelp(project, cosense.Page.title, helps);
+
+          // update glossary
+          const option = await getOption();
+          if (
+            cosense.Page.title === 'Glossary' &&
+            cosense.Project.name === option.newPageProject
+          ) {
+            const glossary = extractGlossary(
+              lines?.map((line) => line.text) || [],
+            );
+            setGlossary(glossary);
+          }
         }
       });
 
