@@ -1,10 +1,11 @@
 import { storage } from '#imports';
+import { Unwatch } from 'wxt/utils/storage';
 
 export type WebHelp = {
   url: string;
   helpfeel: string;
 };
-type WebHelpStorageItem = WebHelp[];
+export type WebHelpStorageItem = WebHelp[];
 
 export function isSameWebHelp(a: WebHelp) {
   return (b: WebHelp) => a.url === b.url && a.helpfeel === b.helpfeel;
@@ -34,9 +35,21 @@ export async function removeWebHelp(url: string, helpfeel: string) {
   webHelpStorage.setValue(updatedWebHelp);
 }
 
-export async function watchWebHelp(
-  callback: (webHelp: WebHelpStorageItem) => void,
+export async function updateWebHelp(
+  url: string,
+  helpfeel: string,
+  newHelpfeel: string,
 ) {
   const currentWebHelp = await getAllWebHelp();
-  return [currentWebHelp, webHelpStorage.watch(callback)];
+  const filteredWebHelp = currentWebHelp.filter(
+    (item) => !isSameWebHelp({ url, helpfeel })(item),
+  );
+  const updatedWebHelp = [...filteredWebHelp, { url, helpfeel: newHelpfeel }];
+  webHelpStorage.setValue(updatedWebHelp);
+}
+
+export function watchWebHelp(
+  callback: (webHelp: WebHelpStorageItem) => void,
+): [Promise<void>, Unwatch] {
+  return [getAllWebHelp().then(callback), webHelpStorage.watch(callback)];
 }

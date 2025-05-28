@@ -1,4 +1,5 @@
 import { storage } from '#imports';
+import { Unwatch } from 'wxt/utils/storage';
 import { WebHelp } from './webHelp';
 
 type CosensePage = {
@@ -9,7 +10,7 @@ type CosenseProject = {
   project: string;
   pages: CosensePage[];
 };
-type CosenseHelpStorageItem = CosenseProject[];
+export type CosenseHelpStorageItem = CosenseProject[];
 
 export function isSameCosensePage(a: CosensePage) {
   return (b: CosensePage) => a.page === b.page;
@@ -106,9 +107,11 @@ export async function removeCosenseHelp(project: string, page: string) {
   cosenseHelpStorage.setValue(updatedCosenseHelp);
 }
 
-export async function watchCosenseHelp(
+export function watchCosenseHelp(
   callback: (cosenseHelp: CosenseHelpStorageItem) => void,
-) {
-  const currentCosenseHelp = await getAllCosenseHelp();
-  return [currentCosenseHelp, cosenseHelpStorage.watch(callback)];
+): [Promise<void>, Unwatch] {
+  return [
+    getAllCosenseHelp().then(callback),
+    cosenseHelpStorage.watch(callback),
+  ];
 }

@@ -1,9 +1,15 @@
+import { parse } from 'ts-monadic-parser';
+import { literal } from './parser/helpfeel';
 import { WebHelp } from './storage/webHelp';
 
 export function matchCosenseUrl(url: string) {
   const result = url.match(/https?:\/\/scrapbox\.io\/([^/]+)\/([^/]*)/);
   if (!result) return [undefined, undefined];
   return [result[1], result[2]];
+}
+
+export function makeCosenseUrl(project: string, page?: string) {
+  return `https://scrapbox.io/${project}/${page}`;
 }
 
 export function extractHelp(url: string, lines: string[]): WebHelp[] {
@@ -21,4 +27,11 @@ export function extractHelp(url: string, lines: string[]): WebHelp[] {
         helpfeel: x.text.replace(/^\?\s+/, ''),
       };
     });
+}
+
+export function expandHelpfeel(helpfeel: string) {
+  const result = parse(literal)(helpfeel);
+  if (result.length === 0) throw new Error('Invalid input');
+  if (result[0][1] !== '') throw new Error(`Unused input: ${result[0][1]}`);
+  return result[0][0];
 }

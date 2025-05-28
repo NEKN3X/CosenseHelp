@@ -121,3 +121,8 @@
     @apply bg-background text-foreground;
   }
 }
+
+.fade-out-right {
+  mask-image: linear-gradient(to right, black 90%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, black 90%, transparent 100%);
+}

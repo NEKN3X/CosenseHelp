@@ -1,39 +1,54 @@
 import { Fzf, byLengthAsc } from 'fzf';
-import { matchCosenseUrl } from './cosense';
-import { getAllCosenseHelp } from './storage/cosenseHelp';
-import { getAllWebHelp } from './storage/webHelp';
+import { expandHelpfeel, makeCosenseUrl } from './cosense';
+import { CosenseHelpStorageItem } from './storage/cosenseHelp';
+import { WebHelpStorageItem } from './storage/webHelp';
 
-type SuggestType = 'WEB' | 'COSENSE_PAGE' | 'COSENSE_HELP';
-type Suggest = {
+export type SuggestType = 'WEB' | 'COSENSE_PAGE' | 'COSENSE_HELP';
+export type Suggest = {
   type: SuggestType;
   title: string;
   url: string;
 };
 
-export async function getAllHelp(): Promise<Suggest[]> {
-  const webHelp = await getAllWebHelp();
-  const cosenseHelp = await getAllCosenseHelp();
-  const webHelpSuggests: Suggest[] = webHelp.map((item) => ({
-    url: item.url,
-    title: item.helpfeel,
-    type: 'WEB',
-  }));
-  const cosenseHelpSuggests: Suggest[] = cosenseHelp.flatMap((item) => [
-    {
-      url: item.page,
-      title: matchCosenseUrl(item.page)![0],
-      type: 'COSENSE_PAGE',
-    },
-    ...item.help.map(
-      (help): Suggest => ({
-        url: help.url,
-        title: help.helpfeel,
-        type: 'COSENSE_HELP',
+export function makeSuggest(
+  type: SuggestType,
+  title: string,
+  url: string,
+): Suggest {
+  return { type, title, url };
+}
+
+export function makeWebSuggest(storage: WebHelpStorageItem): Suggest[] {
+  return storage.flatMap((item) => [
+    ...expandHelpfeel(item.helpfeel).map(
+      (command): Suggest => ({
+        type: 'WEB',
+        title: command,
+        url: item.url,
       }),
     ),
   ]);
+}
 
-  return [...webHelpSuggests, ...cosenseHelpSuggests];
+export function makeCosenseSuggest(storage: CosenseHelpStorageItem): Suggest[] {
+  return storage.flatMap((item) => [
+    ...item.pages.flatMap((page): Suggest[] => [
+      {
+        type: 'COSENSE_PAGE',
+        url: makeCosenseUrl(item.project, page.page),
+        title: page.page,
+      },
+      ...page.help.flatMap((help): Suggest[] => [
+        ...expandHelpfeel(help.helpfeel).map(
+          (command): Suggest => ({
+            type: 'COSENSE_HELP',
+            url: help.url,
+            title: command,
+          }),
+        ),
+      ]),
+    ]),
+  ]);
 }
 
 export function search(data: Suggest[], text: string): Suggest[] {
@@ -59,5 +74,10 @@ export function search(data: Suggest[], text: string): Suggest[] {
   });
   const searchText = splitAlphaNum(segmentText(text)).toLowerCase();
   const result = fzf.find(searchText);
-  return result.map((x) => x.item);
+  return result
+    .map((x) => x.item)
+    .reduce((acc, item) => {
+      if (acc.some((x) => x.url === item.url)) return acc;
+      return [...acc, item];
+    }, [] as Suggest[]);
 }

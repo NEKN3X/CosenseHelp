@@ -1,8 +1,11 @@
+import { Browser } from '#imports';
+
 export type CosenseObject = {
   Project: {
     name: string;
     pages: {
       title: string;
+      exists: boolean;
     }[];
   };
   Page: {
@@ -26,6 +29,14 @@ export type CosenseLinesChangedMessage = {
   type: 'cosense-lines-changed';
   payload: {
     cosense: CosenseObject;
+  };
+};
+
+export type SearchWithDefaultEngineMessage = {
+  type: 'search-with-default-engine';
+  payload: {
+    query: string;
+    disposition: Browser.search.Disposition;
   };
 };
 
@@ -85,6 +96,29 @@ export function createCosenseLinesChangedMessage(
     type: 'cosense-lines-changed',
     payload: {
       cosense: clonseCosenseObject(cosense),
+    },
+  };
+}
+
+export function isSearchWithDefaultEngineMessage(
+  message: unknown,
+): message is SearchWithDefaultEngineMessage {
+  return (
+    typeof message === 'object' &&
+    message !== null &&
+    'type' in message &&
+    (message as { type: string }).type === 'search-with-default-engine'
+  );
+}
+export function createSearchWithDefaultEngineMessage(
+  query: string,
+  disposition: Browser.search.Disposition,
+): SearchWithDefaultEngineMessage {
+  return {
+    type: 'search-with-default-engine',
+    payload: {
+      query,
+      disposition,
     },
   };
 }

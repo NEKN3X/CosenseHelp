@@ -19,7 +19,9 @@ export default defineContentScript({
       window.addEventListener('message', async (event) => {
         if (isCosensePageLoadedMessage(event.data)) {
           const cosense = event.data.payload.cosense;
-          const pages = cosense.Project.pages.map((page) => page.title);
+          const pages = cosense.Project.pages
+            .filter((page) => page.exists)
+            .map((page) => page.title);
           if (pages.length > 0) {
             await setCosensePages(cosense.Project.name, pages);
           }
