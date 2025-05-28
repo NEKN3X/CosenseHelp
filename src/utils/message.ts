@@ -46,6 +46,7 @@ function clonseCosenseObject(cosense: CosenseObject): CosenseObject {
       name: cosense.Project.name,
       pages: cosense.Project.pages.map((page) => ({
         title: page.title,
+        exists: page.exists,
       })),
     },
     Page: {

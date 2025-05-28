@@ -24,6 +24,7 @@ export default defineContentScript({
             .filter((page) => page.exists)
             .map((page) => page.title);
           if (pages.length > 0) {
+            console.log('Cosense pages loaded:', pages);
             await setCosensePages(cosense.Project.name, pages);
           }
           const page = cosense.Page.title;
