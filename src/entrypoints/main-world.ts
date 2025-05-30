@@ -2,6 +2,7 @@ import { defineUnlistedScript } from '#imports';
 import { debounce } from '@/utils/debounce';
 import {
   CosenseObject,
+  createCosenseLayoutChangedMessage,
   createCosenseLinesChangedMessage,
   createCosensePageLoadedMessage,
 } from '@/utils/message';
@@ -25,14 +26,19 @@ export default defineUnlistedScript(() => {
     if (!cosense) return;
     window.postMessage(createCosensePageLoadedMessage(cosense));
 
+    const [f] = debounce(() => {
+      const lines = window.cosense?.Page.lines;
+      const _cosense = window.cosense;
+      if (!lines || !_cosense) return;
+      window.postMessage(createCosenseLinesChangedMessage(_cosense));
+    }, 1000);
     cosense.on('lines:changed', () => {
-      const [f] = debounce(() => {
-        const lines = window.cosense?.Page.lines;
-        const _cosense = window.cosense;
-        if (!lines || !_cosense) return;
-        window.postMessage(createCosenseLinesChangedMessage(_cosense));
-      }, 1000);
       f([]);
+    });
+    cosense.on('layout:changed', () => {
+      const _cosense = window.cosense;
+      if (!_cosense) return;
+      window.postMessage(createCosenseLayoutChangedMessage(_cosense));
     });
   });
 });
