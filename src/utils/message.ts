@@ -32,6 +32,13 @@ export type CosenseLinesChangedMessage = {
   };
 };
 
+export type CosenseLayoutChangedMessage = {
+  type: 'cosense-layout-changed';
+  payload: {
+    cosense: CosenseObject;
+  };
+};
+
 export type SearchWithDefaultEngineMessage = {
   type: 'search-with-default-engine';
   payload: {
@@ -95,6 +102,27 @@ export function createCosenseLinesChangedMessage(
 ): CosenseLinesChangedMessage {
   return {
     type: 'cosense-lines-changed',
+    payload: {
+      cosense: clonseCosenseObject(cosense),
+    },
+  };
+}
+
+export function isCosenseLayoutChangedMessage(
+  message: unknown,
+): message is CosenseLayoutChangedMessage {
+  return (
+    typeof message === 'object' &&
+    message !== null &&
+    'type' in message &&
+    (message as { type: string }).type === 'cosense-layout-changed'
+  );
+}
+export function createCosenseLayoutChangedMessage(
+  cosense: CosenseObject,
+): CosenseLayoutChangedMessage {
+  return {
+    type: 'cosense-layout-changed',
     payload: {
       cosense: clonseCosenseObject(cosense),
     },
