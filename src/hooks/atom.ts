@@ -1,8 +1,12 @@
 import { expandHelpfeel } from '@/utils/cosense';
-import { CosenseHelpStorageItem } from '@/utils/storage/cosenseHelp';
+import {
+  CosenseHelpStorageItem,
+  CosensePageStorageItem,
+} from '@/utils/storage/cosenseHelp';
 import { WebHelpStorageItem } from '@/utils/storage/webHelp';
 import {
-  makeCosenseSuggest,
+  makeCosenseHelpSuggest,
+  makeCosensePageSuggest,
   makeWebSuggest,
   search,
   Suggest,
@@ -13,7 +17,8 @@ export const commandInputAtom = atom<string>('');
 export const activeUrlAtom = atom<string>('');
 
 export const webStorageAtom = atom<WebHelpStorageItem>();
-export const cosenseStorageAtom = atom<CosenseHelpStorageItem>();
+export const cosensePageStorageAtom = atom<CosensePageStorageItem>();
+export const cosenseHelpStorageAtom = atom<CosenseHelpStorageItem>();
 
 export const allWebSuggestsAtom = atom<Suggest[]>((get) => {
   const webStorage = get(webStorageAtom);
@@ -21,16 +26,22 @@ export const allWebSuggestsAtom = atom<Suggest[]>((get) => {
   if (!webStorage) return [];
   return makeWebSuggest(webStorage, glossary);
 });
-export const allCosenseSuggestsAtom = atom<Suggest[]>((get) => {
-  const cosenseStorage = get(cosenseStorageAtom);
+export const allCosensePageSuggestsAtom = atom<Suggest[]>((get) => {
+  const cosenseStorage = get(cosensePageStorageAtom);
+  if (!cosenseStorage) return [];
+  return makeCosensePageSuggest(cosenseStorage);
+});
+export const allCosenseHelpSuggestsAtom = atom<Suggest[]>((get) => {
+  const cosenseStorage = get(cosenseHelpStorageAtom);
   const glossary = get(glossaryAtom);
   if (!cosenseStorage) return [];
-  return makeCosenseSuggest(cosenseStorage, glossary);
+  return makeCosenseHelpSuggest(cosenseStorage, glossary);
 });
 
 export const allSuggestsAtom = atom<Suggest[]>((get) => [
   ...get(allWebSuggestsAtom),
-  ...get(allCosenseSuggestsAtom),
+  ...get(allCosensePageSuggestsAtom),
+  ...get(allCosenseHelpSuggestsAtom),
 ]);
 
 export const filteredSuggestsAtom = atom<Suggest[]>((get) => {

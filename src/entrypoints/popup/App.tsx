@@ -15,7 +15,8 @@ import {
   CommandPage,
   commandPageAtom,
   commandPagesAtom,
-  cosenseStorageAtom,
+  cosenseHelpStorageAtom,
+  cosensePageStorageAtom,
   expandedCommandAtom,
   filteredSuggestsAtom,
   glossaryAtom,
@@ -29,7 +30,10 @@ import {
   openUrlInNewTab,
   openUrlInNewWindow,
 } from '@/utils/open';
-import { watchCosenseHelp } from '@/utils/storage/cosenseHelp';
+import {
+  watchCosenseHelp,
+  watchCosensePage,
+} from '@/utils/storage/cosenseHelp';
 import { getGlossary } from '@/utils/storage/glossary';
 import { getOption } from '@/utils/storage/option';
 import {
@@ -57,7 +61,8 @@ import { isHotkeyPressed } from 'react-hotkeys-hook';
 function App() {
   const [commandInput, setCommandInput] = useAtom(commandInputAtom);
   const setWebHelpStorage = useSetAtom(webStorageAtom);
-  const setCosenseStorage = useSetAtom(cosenseStorageAtom);
+  const setCosensePageStorage = useSetAtom(cosensePageStorageAtom);
+  const setCosenseHelpStorage = useSetAtom(cosenseHelpStorageAtom);
   const suggests = useAtomValue(filteredSuggestsAtom);
   const setCommandPages = useSetAtom(commandPagesAtom);
   const commandPage = useAtomValue(commandPageAtom);
@@ -102,7 +107,13 @@ function App() {
   }, []);
 
   useEffect(() => {
-    const [promise, unwatch] = watchCosenseHelp(setCosenseStorage);
+    const [promise, unwatch] = watchCosensePage(setCosensePageStorage);
+    Promise.resolve(promise);
+    return unwatch;
+  }, []);
+
+  useEffect(() => {
+    const [promise, unwatch] = watchCosenseHelp(setCosenseHelpStorage);
     Promise.resolve(promise);
     return unwatch;
   }, []);

@@ -1,6 +1,9 @@
 import { Fzf, byLengthAsc } from 'fzf';
 import { expandHelpfeel, makeCosenseUrl } from './cosense';
-import { CosenseHelpStorageItem } from './storage/cosenseHelp';
+import {
+  CosenseHelpStorageItem,
+  CosensePageStorageItem,
+} from './storage/cosenseHelp';
 import { WebHelpStorageItem } from './storage/webHelp';
 
 export type SuggestType = 'WEB' | 'COSENSE_PAGE' | 'COSENSE_HELP';
@@ -33,17 +36,26 @@ export function makeWebSuggest(
   ]);
 }
 
-export function makeCosenseSuggest(
-  storage: CosenseHelpStorageItem,
-  glossary?: Map<string, string>,
+export function makeCosensePageSuggest(
+  storage: CosensePageStorageItem,
 ): Suggest[] {
   return storage.flatMap((item) => [
     ...item.pages.flatMap((page): Suggest[] => [
       {
         type: 'COSENSE_PAGE',
-        url: makeCosenseUrl(item.project, page.page),
-        title: page.page,
+        url: makeCosenseUrl(item.project, page),
+        title: page,
       },
+    ]),
+  ]);
+}
+
+export function makeCosenseHelpSuggest(
+  storage: CosenseHelpStorageItem,
+  glossary?: Map<string, string>,
+): Suggest[] {
+  return storage.flatMap((project) => [
+    ...project.pages.flatMap((page): Suggest[] => [
       ...page.help.flatMap((help): Suggest[] => [
         ...expandHelpfeel(help.helpfeel, glossary).map(
           (command): Suggest => ({

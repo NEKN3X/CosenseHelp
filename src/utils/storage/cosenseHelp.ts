@@ -2,24 +2,39 @@ import { storage } from '#imports';
 import { Unwatch } from 'wxt/utils/storage';
 import { WebHelp } from './webHelp';
 
-type CosensePage = {
+type CosenseProject = {
+  project: string;
+  pages: string[];
+};
+export type CosensePageStorageItem = CosenseProject[];
+
+const cosensePageStorage = storage.defineItem<CosensePageStorageItem>(
+  'local:cosensePage',
+  { fallback: [] },
+);
+
+type CosenseHelpPage = {
   page: string;
   help: WebHelp[];
 };
-type CosenseProject = {
+type CosenseHelp = {
   project: string;
-  pages: CosensePage[];
+  pages: CosenseHelpPage[];
 };
-export type CosenseHelpStorageItem = CosenseProject[];
+export type CosenseHelpStorageItem = CosenseHelp[];
 
-export function isSameCosensePage(a: CosensePage) {
-  return (b: CosensePage) => a.page === b.page;
+export function isSameCosensePage(a: CosenseHelpPage) {
+  return (b: CosenseHelpPage) => a.page === b.page;
 }
 
 const cosenseHelpStorage = storage.defineItem<CosenseHelpStorageItem>(
-  'local:cosenseHelp',
+  'sync:cosenseHelp',
   { fallback: [] },
 );
+
+export function getAllCosensePage() {
+  return cosensePageStorage.getValue();
+}
 
 export function getAllCosenseHelp() {
   return cosenseHelpStorage.getValue();
@@ -39,7 +54,8 @@ export async function setCosenseHelp(
   );
   const currentPages = currentProject?.pages || [];
   const filteredPages = currentPages.filter((item) => item.page !== page);
-  const updatedPages = [...filteredPages, { page, help: help }];
+  const updatedPages =
+    help.length > 0 ? [...filteredPages, { page, help: help }] : filteredPages;
   const updatedCosenseHelp = [
     ...filteredCosenseHelp,
     { project, pages: updatedPages },
@@ -47,7 +63,10 @@ export async function setCosenseHelp(
   cosenseHelpStorage.setValue(updatedCosenseHelp);
 }
 
-export async function setCosenseHelps(project: string, pages: CosensePage[]) {
+export async function setCosenseHelps(
+  project: string,
+  pages: CosenseHelpPage[],
+) {
   const currentCosenseHelp = await getAllCosenseHelp();
   const filteredCosenseHelp = currentCosenseHelp.filter(
     (item) => item.project !== project,
@@ -66,18 +85,16 @@ export async function setCosenseHelps(project: string, pages: CosensePage[]) {
 }
 
 export async function setCosensePages(project: string, pages: string[]) {
-  const currentCosenseHelp = await getAllCosenseHelp();
+  const currentCosenseHelp = await getAllCosensePage();
   const filteredCosenseHelp = currentCosenseHelp.filter(
     (item) => item.project !== project,
   );
   const currentPages =
     currentCosenseHelp.find((item) => item.project === project)?.pages || [];
-  const existingPages = currentPages.filter((item) =>
-    pages.includes(item.page),
+  const existingPages = currentPages.filter((item) => pages.includes(item));
+  const newPages: string[] = pages.filter(
+    (page) => !currentPages.includes(page),
   );
-  const newPages: CosensePage[] = pages
-    .filter((page) => !currentPages.some((item) => item.page === page))
-    .map((page) => ({ page, help: [] }));
   const updatedCosenseHelp = [
     ...filteredCosenseHelp,
     {
@@ -85,11 +102,11 @@ export async function setCosensePages(project: string, pages: string[]) {
       pages: [...existingPages, ...newPages],
     },
   ];
-  cosenseHelpStorage.setValue(updatedCosenseHelp);
+  cosensePageStorage.setValue(updatedCosenseHelp);
 }
 
 export async function removeCosenseHelp(project: string, page: string) {
-  const currentCosenseHelp = await getAllCosenseHelp();
+  const currentCosenseHelp = await getAllCosensePage();
   const filteredCosenseHelp = currentCosenseHelp.filter(
     (item) => item.project !== project,
   );
@@ -97,14 +114,21 @@ export async function removeCosenseHelp(project: string, page: string) {
     (item) => item.project === project,
   );
   if (!currentProject) return;
-  const updatedPages = currentProject.pages.filter(
-    (item) => item.page !== page,
-  );
+  const updatedPages = currentProject.pages.filter((item) => item !== page);
   const updatedCosenseHelp = [
     ...filteredCosenseHelp,
     { project, pages: updatedPages },
   ];
-  cosenseHelpStorage.setValue(updatedCosenseHelp);
+  cosensePageStorage.setValue(updatedCosenseHelp);
+}
+
+export function watchCosensePage(
+  callback: (cosenseHelp: CosensePageStorageItem) => void,
+): [Promise<void>, Unwatch] {
+  return [
+    getAllCosensePage().then(callback),
+    cosensePageStorage.watch(callback),
+  ];
 }
 
 export function watchCosenseHelp(
