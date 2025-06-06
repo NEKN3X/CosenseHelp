@@ -32,6 +32,19 @@ const cosenseHelpStorage = storage.defineItem<CosenseHelpStorageItem>(
   { fallback: [] },
 );
 
+export function exportCosensePage() {
+  return cosensePageStorage.getValue();
+}
+export function exportCosenseHelp() {
+  return cosenseHelpStorage.getValue();
+}
+export function importCosensePage(data: CosensePageStorageItem) {
+  return cosensePageStorage.setValue(data);
+}
+export function importCosenseHelp(data: CosenseHelpStorageItem) {
+  return cosenseHelpStorage.setValue(data);
+}
+
 export function getAllCosensePage() {
   return cosensePageStorage.getValue();
 }

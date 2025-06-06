@@ -7,6 +7,13 @@ const glossaryStorage = storage.defineItem<GlossaryStorageItem>(
   { fallback: {} },
 );
 
+export function exportGlossary() {
+  return glossaryStorage.getValue();
+}
+export function importGlossary(data: GlossaryStorageItem) {
+  return glossaryStorage.setValue(data);
+}
+
 export async function getGlossary() {
   const storage = await glossaryStorage.getValue();
   return new Map<string, string>(Object.entries(storage));

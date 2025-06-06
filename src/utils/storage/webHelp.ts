@@ -15,6 +15,13 @@ const webHelpStorage = storage.defineItem<WebHelpStorageItem>('sync:webHelp', {
   fallback: [],
 });
 
+export function exportWebHelp() {
+  return webHelpStorage.getValue();
+}
+export function importWebHelp(data: WebHelpStorageItem) {
+  return webHelpStorage.setValue(data);
+}
+
 export function getAllWebHelp() {
   return webHelpStorage.getValue();
 }

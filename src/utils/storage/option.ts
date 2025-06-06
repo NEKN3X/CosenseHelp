@@ -12,6 +12,13 @@ const optionStorawge = storage.defineItem<OptionStorageItem>('sync:option', {
   },
 });
 
+export function exportOption() {
+  return optionStorawge.getValue();
+}
+export function importOption(data: OptionStorageItem) {
+  return optionStorawge.setValue(data);
+}
+
 export function getOption() {
   return optionStorawge.getValue();
 }
